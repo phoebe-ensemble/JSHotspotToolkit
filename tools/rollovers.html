@@ -12,12 +12,9 @@
 		</style>
 </head>
 <body class='no-js'>
-	<!--<p id='message-no-js'>This page needs Javascript to work.</p>-->
-	<canvas id="canvas" width=1000 height=800 style="position: absolute; left: 0px; top: 0px; border: 2px dashed grey; background-image: url('background_image.jpg');"></canvas>
-	
-	<!--<img id="rollover" src="Diagram_rollover.png"/>-->
-	<script src='dollardom.min.js'></script>	
-	<script src='Mouse.js'></script>
+	<canvas id="canvas" width=1000 height=800 style="position: absolute; left: 0px; top: 0px; border: 2px dashed grey; background-image: url('../images/background_image.jpg');"></canvas>	
+	<script src='../lib/dollardom.min.js'></script>	
+	<script src='../lib/Mouse.js'></script>
 	
 	<script>
 		$dom.onready(init);
@@ -99,7 +96,6 @@
 				return null;
 			}
 			
-			
 			var lastPath = { x: -1, y: -1 };
 			
 			mouse.on('move', null, function (e) { 					
@@ -108,8 +104,7 @@
 					if(lastPath.x == rollover.x && lastPath.y == rollover.y) return;
 					render();
 					lastPath = rollover;
-					console.log("Rolled over " + rollover.x + "," + rollover.y);				
-					
+					console.log("Rolled over " + rollover.x + "," + rollover.y);					
 					
 					var canvas = document.getElementById("canvas");
 					var ctx = canvas.getContext("2d");			

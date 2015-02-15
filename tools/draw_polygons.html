@@ -8,18 +8,15 @@
 		
 		<style>
 			body {
-			/*	background-color: black;
-				background-image: url(Diagram_latest.png); */
 			}
 		</style>
 </head>
 <body class='no-js'>
 	<!--<p id='message-no-js'>This page needs Javascript to work.</p>-->
-	<canvas id="canvas" width=1000 height=800 style="position: absolute; left: 0px; top: 0px; border: 2px dashed grey; background-image: url('background_image.jpg');"></canvas>
+	<canvas id="canvas" width=1000 height=800 style="position: absolute; left: 0px; top: 0px; border: 2px dashed grey; background-image: url('../images/background_image.jpg');"></canvas>
 	
-	<!--<img id="rollover" src="Diagram_rollover.png"/>-->
-	<script src='dollardom.min.js'></script>	
-	<script src='Mouse.js'></script>
+	<script src='../lib/dollardom.min.js'></script>	
+	<script src='../lib/Mouse.js'></script>
 	
 	<script>
 		$dom.onready(init);
