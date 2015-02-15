@@ -13,7 +13,7 @@
 </head>
 <body class='no-js'>
 <img src="../../diagram.png">
-	<canvas id="canvas" width=1000 height=800 style="position: absolute; left: 0px; top: 0px; border: 2px dashed grey;"></canvas>	
+	<canvas id="canvas" width=1000 height=800 style="position: absolute; left: 0px; top: 0px; border: 2px dashed grey; opacity: 0.15;"></canvas>	
 	<script src='../lib/dollardom.min.js'></script>	
 	<script src='../lib/Mouse.js'></script>
 	
@@ -116,7 +116,12 @@
 					
 					for(var i = 0; i < paths[row].length; i++) {
 						var path = paths[row][i];
-						ctx.stroke(path);
+			//			ctx.stroke(path);
+						ctx.save();
+						ctx.fillStyle = "grey";
+						ctx.clip(path);
+						ctx.fillRect(0, 0, canvas.width, canvas.height);
+						ctx.restore();
 					}
 			}
 			
@@ -126,7 +131,12 @@
 					ctx.strokeStyle = "black";					
 					for(var i = 0; i <= paths[0].length + 1; i++) { // TODO: wat
 						var path = paths[i][col];
-						ctx.stroke(path);
+				//		ctx.stroke(path);
+						ctx.save();
+						ctx.fillStyle = "grey";
+						ctx.clip(path);
+						ctx.fillRect(0, 0, canvas.width, canvas.height);
+						ctx.restore();
 					}
 			}
 			
