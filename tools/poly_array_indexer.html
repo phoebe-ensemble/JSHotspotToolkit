@@ -13,7 +13,8 @@
 </head>
 <body class='no-js'>
 	<!--<p id='message-no-js'>This page needs Javascript to work.</p>-->
-	<canvas id="canvas" width=1000 height=800 style="position: absolute; left: 0px; top: 0px; border: 2px dashed grey; background-image: url('../images/background_image.jpg');"></canvas>
+<img src="../../diagram.png">
+	<canvas id="canvas" width=1000 height=800 style="position: absolute; left: 0px; top: 0px; border: 2px dashed grey;"></canvas>
 	
 	<script src='../lib/dollardom.min.js'></script>	
 	<script src='../lib/Mouse.js'></script>
@@ -94,7 +95,7 @@
 			var canvas = document.getElementById("canvas");
 			var ctx = canvas.getContext("2d");			
 			ctx.lineWidth = 5;
-			ctx.strokeStyle = "#EEE";
+			ctx.strokeStyle = "black";
 			
 			preprocessPaths();
 			
@@ -116,13 +117,15 @@
 				var cell = 0;
 				var x = 0;
 				var y = 0;
-				var newPolys = [polys.length];
+				var newPolys = [];
 				var max_x = polys[0][0].length + 1;
 				var max_y = polys[0].length + 1;
 			
 			
 				mouse.on('click', 'right', function (e) {							
 					e.stopPropagation();
+					polys = newPolys;
+					render();
 					console.log();
 					console.log(JSON.stringify(newPolys));
 				});
@@ -147,9 +150,11 @@
 					}
 					
 					for(var i = 0; i < polys.length; i++) {		
-						for(var j = 0; j < polys[i].length; j++) {							
+						for(var j = 0; j < polys[i].length; j++) {					
+						
 							var path = makePath(polys[i][j]);		
 							if(ctx.isPointInPath(path, this.x, this.y)) {
+							
 								console.log("Cell: " + cell);
 								addPoly(polys[i][j]);
 								cell++;
