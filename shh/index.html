@@ -36,7 +36,6 @@
 				width: 100%;
 				height: 700px;
 				text-align: center;
-				border: 3px dashed grey;
 			}
 			
 			#instructions {
@@ -134,6 +133,38 @@
 			popup.style.display = "block";
 		}		
 		
+		function betterPopup(i, j) {
+			console.log(i + "," + j);
+			var popup = $dom.get("#popup")[0];
+			
+			var bound = paths[i][j].bounds;
+			
+			var rect = canvas.getBoundingClientRect();
+			var rect2 = popup.getBoundingClientRect();
+					
+					
+					
+			popup.innerHTML = "Lorem ipsum dolor sit amet,.";
+			popup.style.left = rect.left + bound.left + (bound.width / 2) - (rect2.width / 2) + "px"; 
+			popup.style.top = rect.top + bound.top - 30 + "px"; 
+			popup.style.display = "block";
+			
+			console.log(JSON.stringify(bound));
+			console.log(bound.left);
+			console.log(bound.width);
+			console.log(bound.top);
+			
+			
+		//	var rect = popup.getBoundingClientRect();
+			
+		//	popup.style.left = (x - 25) + "px";
+		//	popup.style.top = (y - 50) + "px";
+			
+			
+			
+			
+		}
+		
 		function hidePopUp() {
 			var popup = $dom.get("#popup")[0];
 			popup.style.display = "none";
@@ -221,7 +252,9 @@
 					lastPath = rollover;					
 					fillOutside(rollover.x, rollover.y);
 					paper.view.draw();
-					doPopUp(canvas.offsetLeft + x, canvas.offsetTop + y);
+				//	doPopUp(canvas.offsetLeft + x, canvas.offsetTop + y);
+					
+					betterPopup(rollover.x, rollover.y);
 				} else {
 					lastPath = { x: -1, y: -1 };
 					clearCanvas();
