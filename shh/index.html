@@ -47,7 +47,7 @@
 				left: 150px;
 			}
 			
-			#popup {
+			.popup {
 				position: absolute;
 				display: none;
 				top: 0px;
@@ -56,7 +56,27 @@
 				background-color: white;
 				border: 2px solid red;
 				text-align: center;
-				width: 100px;
+				width: auto;
+				max-width: 250px;
+				opacity: 0.0;
+				pointer-events:none;
+				padding: 10px;
+				border-radius: 5px;
+			}
+			
+			.popup em {
+				color: red;
+			}
+			
+			.popupRegion {
+				position: fixed;
+				top: 0px;
+				left: 0px;	
+				width: 100%;
+				height: 100%;
+				border: 1px solid green;
+				
+				pointer-events:none;
 			}
 			
 			canvas {					
@@ -76,30 +96,106 @@
 	
 	
 	<div id="container">
+	<div class="popupRegion"></div>
 		<div id="instructions">
 			<p><em>Roll-over the coloured blocks</em> to see examples of learning outcomes that generally match each of the various combinations of the cognitive process and knowledge dimensions.</p>
 			<p>NOTE: These are learning outcomes - not learning activities. Learning activities are derived from the learning outcomes. It is useful to precede each objective with something like, "students will be able to..."</p>
 		</div>
 		<canvas id="canvas" width=800 height=700>
 		</canvas>		
-		<div id="popup">This here's a popup ya'll</div>
 	</div>
 	
 	<div id="logo"></div>
 	
-	<script src='./lib/dollardom.min.js'></script>	
+	<script src='./lib/dollardom-animate.min.js'></script>	
 	<script src='./lib/Mouse.js'></script>
-	<script src='./lib/paper-full.min.js'></script>
+	<script src='./lib/paper-core.min.js'></script>
 	
 	<script>
 		$dom.onready(init);
 		
 		var polys = [];
-		var paths = [[],[],[],[],[],[]];
+		var paths = [[],[],[],[],[],[],[]];
 		
-		polys = // grid-aligned polys, generated using draw_polygons tool and re-indexed using poly_array_indexer tool
-		[[[[491,9],[432,33],[431,49],[490,81],[547,52],[548,34],[491,9]],[[611,83],[547,51],[490,79],[490,98],[555,133],[609,100],[611,83]],[[553,150],[554,131],[607,101],[679,136],[674,153],[620,188],[553,150]],[[693,249],[617,206],[619,186],[673,152],[752,194],[724,296],[673,336],[693,249]]],[[[371,78],[372,94],[426,129],[490,99],[489,78],[429,49],[371,78]],[[489,184],[427,148],[427,127],[490,98],[554,130],[553,151],[489,184]],[[557,244],[486,203],[487,184],[552,150],[619,187],[618,207],[557,244]],[[630,312],[553,264],[556,244],[618,205],[692,249],[673,335],[617,382],[630,312]]],[[[303,126],[303,144],[362,181],[427,148],[426,128],[373,95],[303,126]],[[421,240],[363,201],[362,180],[427,147],[485,183],[488,206],[421,240]],[[489,306],[419,260],[421,238],[489,204],[552,241],[557,244],[554,264],[489,306]],[[560,379],[486,324],[489,304],[553,263],[629,311],[616,380],[556,426],[560,379]]],[[[362,201],[289,237],[234,195],[233,179],[304,143],[362,180],[362,201]],[[351,303],[290,255],[289,234],[362,199],[422,238],[420,259],[351,303]],[[415,370],[347,318],[349,303],[418,258],[488,306],[487,325],[415,370]],[[487,448],[414,388],[414,368],[484,325],[559,378],[555,428],[485,482],[487,448]]],[[[212,297],[160,251],[158,233],[233,196],[289,235],[290,255],[212,297]],[[271,367],[212,314],[210,296],[288,254],[350,303],[349,320],[271,367]],[[336,442],[271,386],[269,366],[348,321],[415,371],[415,388],[336,442]],[[407,540],[407,525],[338,459],[337,440],[412,389],[485,445],[485,481],[407,540]]],[[[139,411],[95,362],[76,292],[159,252],[211,298],[212,317],[130,361],[139,411]],[[194,468],[137,410],[130,361],[212,316],[270,365],[271,385],[189,435],[194,468]],[[252,533],[192,467],[188,433],[268,385],[335,441],[337,462],[253,518],[252,533]],[[321,609],[251,533],[252,516],[340,461],[406,523],[406,542],[321,609]]]]
+		polys = // grid-aligned polys, generated using draw_polygons tool and re-indexed using poly_array_indexer tool	
+		[[[[491,9],[432,33],[431,49],[490,81],[547,52],[548,34],[491,9]],[[611,83],[547,51],[490,79],[490,98],[555,133],[609,100],[611,83]],[[553,150],[554,131],[607,101],[679,136],[674,153],[620,188],[553,150]],[[693,249],[617,206],[619,186],[673,152],[752,194],[724,296],[673,336],[693,249]],[[748,384],[672,335],[723,297],[800,341],[748,384]]],[[[371,78],[372,94],[426,129],[490,99],[489,78],[429,49],[371,78]],[[489,184],[427,148],[427,127],[490,98],[554,130],[553,151],[489,184]],[[557,244],[486,203],[487,184],[552,150],[619,187],[618,207],[557,244]],[[630,312],[553,264],[556,244],[618,205],[692,249],[673,335],[617,382],[630,312]],[[693,433],[618,380],[673,335],[748,384],[693,433]]],[[[303,126],[303,144],[362,181],[427,148],[426,128],[373,95],[303,126]],[[421,240],[363,201],[362,180],[427,147],[485,183],[488,206],[421,240]],[[489,306],[419,260],[421,238],[489,204],[552,241],[557,244],[554,264],[489,306]],[[560,379],[486,324],[489,304],[553,263],[629,311],[616,380],[556,426],[560,379]],[[632,488],[556,428],[617,380],[693,432],[632,488]]],[[[362,201],[289,237],[234,195],[233,179],[304,143],[362,180],[362,201]],[[351,303],[290,255],[289,234],[362,199],[422,238],[420,259],[351,303]],[[415,370],[347,318],[349,303],[418,258],[488,306],[487,325],[415,370]],[[487,448],[414,388],[414,368],[484,325],[559,378],[555,428],[485,482],[487,448]],[[564,548],[485,481],[556,428],[632,487],[564,548]]],[[[212,297],[160,251],[158,233],[233,196],[289,235],[290,255],[212,297]],[[271,367],[212,314],[210,296],[288,254],[350,303],[349,320],[271,367]],[[336,442],[271,386],[269,366],[348,321],[415,371],[415,388],[336,442]],[[407,540],[407,525],[338,459],[337,440],[412,389],[485,445],[485,481],[407,540]],[[487,616],[408,541],[488,482],[563,548],[487,616]]],[[[139,411],[95,362],[76,292],[159,252],[211,298],[212,317],[130,361],[139,411]],[[194,468],[137,410],[130,361],[212,316],[270,365],[271,385],[189,435],[194,468]],[[252,533],[192,467],[188,433],[268,385],[335,441],[337,462],[253,518],[252,533]],[[321,609],[251,533],[252,516],[340,461],[406,523],[406,542],[321,609]],[[400,693],[323,608],[408,541],[486,615],[400,693]]],[[[8,405],[54,465],[140,413],[93,360],[8,405]],[[104,529],[193,469],[140,413],[52,463],[104,529]],[[102,529],[160,601],[254,536],[193,468],[102,529]],[[224,686],[322,608],[254,535],[160,601],[224,686]]]]
+		
+		var popupContent = 
+		[[	["<em>Create</em><br>" +
+			"an innovative action plan"],
+			["<em>Reflect</em><br>" +
+			"on one’s personal communication skills"],
+			["<em>Deconstruct</em><br>" +
+			"barriers to achieving change"],
+			["<em>Use</em><br>" +
+			"communication skills principles"],
+			["<em>Predict</em><br>" +
+			"the impact of a prevention plan"],
+			["<em>Identify</em><br>" +
+			"strategies for addressing preventable blindness"],
+			["<em>metacognitive</em><br>" +
+			"Knowledge of cognition in general as well as awareness and knowledge of one’s own cognition"]],			
 			
+			[["<em>Design</em><br>" +
+			"action plans to assess and rectify anomalies"],
+			["<em>Judge</em><br>" +
+			"when to refer patients"],
+			["<em>Integrate</em><br>" +
+			"clinical information obtained through examination"],
+			["<em>Carry out</em><br>" +
+			"an examination of the eye"],
+			["<em>Clarify</em><br>" +
+			"procedural steps"],
+			["<em>Recall</em><br>" +
+			"how to perform an eye examination"			],
+			["<em>procedural</em><br>" +
+			"How to do something, methods of inquiry, and criteria for using skills, algorithms, techniques, and methods"]],
+			
+			[["<em>Assemble</em><br>" +
+			"an inter-disciplinary eye health team"],
+			["<em>Determine</em><br>" +
+			"the position, size, and type of foreign body"],
+			["<em>Differentiate</em><br>" +
+			"high and low risk"],
+			["<em>Provide</em><br>" +
+			"advice to patients"],
+			["<em>Classify</em><br>" +
+			"the types of astigmatism"],
+			["<em>Recognise</em><br>" +
+			"types of ocular emergency requiring ocular first aid"],
+			["<em>conceptual</em><br>" +
+			"The interrelationships among the basic elements within a larger structure that enable them to function together"]],
+			
+			[["<em>Generate</em><br>" +
+			"a log book of clinical activities"],
+			["<em>Check</em><br>" +
+			"the impact of a treatment plan"],
+			["<em>Select</em><br>" +
+			"the most appropriate action"],
+			["<em>Respond</em><br>" +
+			"to frequently asked questions"],
+			["<em>Summarise</em><br>" +
+			"the features of an instrument"],
+			["<em>List</em><br>" +
+			"the cranial nerves"],
+			["<em>Factual</em><br>" +
+			"The basic elements students must know to be acquainted with a discipline or solve problems in it"]],
+			
+			[["<em>create</em><br>" +
+			"Put elements together to form a coherent whole; reorganise into a new pattern or structure"],
+			["<em>evaluate</em><br>" +
+			"Make judgements based on criteria and standards"],
+			["<em>analyse</em><br>" +
+			"Break material into constituent parts and determine how parts relate to one another and to an overall structure or purpose"],
+			["<em>apply</em><br>" +
+			"Carry out or use a procedure in a given situation"],
+			["<em>understand</em><br>" +
+			"Construct meaning from instructional messages, including oral, written, and graphic communication"],
+			["<em>remember</em><br>" +
+			"Retrieve relevant knowledge from long-term memory"]
+		]];
+
+
 		function makePath(poly) {		
 			var path = new paper.Path();
 			path.moveTo(poly[0][0], poly[0][1]);
@@ -118,56 +214,37 @@
 			return path;
 		}
 		
-		var rolloverContext = null;
+		var rolloverContext = null;	
 		
+		var popups = [[],[],[],[],[],[],[]];
+		var lastPopup = null;
 		
-		function doPopUp(x, y) {
-			var popup = $dom.get("#popup")[0];
-			
-			popup.innerHTML = "Lorem ipsum dolor sit amet,.";
-			
-			var rect = popup.getBoundingClientRect();
-			
-			popup.style.left = (x - 25) + "px";
-			popup.style.top = (y - 50) + "px";
-			popup.style.display = "block";
-		}		
-		
-		function betterPopup(i, j) {
-			console.log(i + "," + j);
-			var popup = $dom.get("#popup")[0];
-			
-			var bound = paths[i][j].bounds;
-			
+		function betterPopup(i, j) {	
+			var popup;
+			var bound = paths[i][j].bounds;	
 			var rect = canvas.getBoundingClientRect();
+			if(popups[i][j] === undefined || popups[i][j] === null) {					
+				popup = $dom.create("div.popup");
+				popup.innerHTML = popupContent[j][i];
+				popup.style.display = "block";	
+				$dom.get("#container")[0].appendChild(popup);						
+			} else {
+				popup = popups[i][j];
+				popup.marginTop = "0px";
+			}
+			
 			var rect2 = popup.getBoundingClientRect();
-					
-					
-					
-			popup.innerHTML = "Lorem ipsum dolor sit amet,.";
-			popup.style.left = rect.left + bound.left + (bound.width / 2) - (rect2.width / 2) + "px"; 
-			popup.style.top = rect.top + bound.top - 30 + "px"; 
-			popup.style.display = "block";
+			popup.style.left =  canvas.clientLeft + rect.left + bound.left + (bound.width / 2) - (rect2.width / 2) + "px"; 
+			popup.style.top = canvas.clientTop + rect.top - 30 + "px"; 
 			
-			console.log(JSON.stringify(bound));
-			console.log(bound.left);
-			console.log(bound.width);
-			console.log(bound.top);
-			
-			
-		//	var rect = popup.getBoundingClientRect();
-			
-		//	popup.style.left = (x - 25) + "px";
-		//	popup.style.top = (y - 50) + "px";
-			
-			
-			
-			
+			if(lastPopup != null) $dom.transform(lastPopup, { opacity: 0.0 } , 300);
+			lastPopup = popup;
+			$dom.transform(popup, { opacity: 1.0, marginTop: "-25px" } , 350);
 		}
 		
 		function hidePopUp() {
-			var popup = $dom.get("#popup")[0];
-			popup.style.display = "none";
+			if(lastPopup != null) $dom.transform(lastPopup, { opacity: 0.0 } , 250);
+			lastPopup = null;
 		}
 		
 		function preprocessPaths () {	
@@ -252,8 +329,6 @@
 					lastPath = rollover;					
 					fillOutside(rollover.x, rollover.y);
 					paper.view.draw();
-				//	doPopUp(canvas.offsetLeft + x, canvas.offsetTop + y);
-					
 					betterPopup(rollover.x, rollover.y);
 				} else {
 					lastPath = { x: -1, y: -1 };
@@ -262,34 +337,9 @@
 				}
 			});
 			
-			var lastClick = { x: -1, y: -1 };
 			
-			mouse.on('click', 'left', function (e) {				
-				if(e.target != canvas) return;			
-				var x = 0;
-				var y = 0;
 				
-				console.log("Canvas coords: " + canvas.style.left + "," + canvas.style.top);
 			
-				if(e.offsetX === undefined) {
-					x = e.layerX;
-					y = e.layerY;
-					
-				} else {
-					x = e.offsetX;
-					y = e.offsetY;
-				}
-			
-				var rollover = checkRollover(x, y);
-				
-				if(rollover !== null) {
-					if(lastClick.x == rollover.x && lastClick.y == rollover.y) return;
-					lastClick = rollover;		
-					var rect = canvas.getBoundingClientRect();
-					
-					doPopUp(canvas.offsetLeft + x, canvas.offsetTop + y);
-				}	
-			});
 		}
 	</script>
 </body>
