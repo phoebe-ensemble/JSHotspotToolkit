@@ -1,0 +1,48 @@
+
+#toolbox {
+    background-color: white;
+    width: 150px;
+    overflow: hidden;
+    border: 1px solid black;
+    border-radius: 5px;
+    position: fixed;
+    top: 5px;
+    left: 5px;
+    padding: 10px;
+    padding-right: 0px;
+}
+
+
+#workspace {
+    position: absolute;
+    border: 1px solid black;
+    height: 700px;
+    width: 800px;
+
+    top: 50px;
+    left: 250px;
+
+    z-index: -10;
+    background-repeat: no-repeat;
+
+    /*cursor: crosshair;*/
+    cursor: none;
+}
+
+#canvas {
+    top: 0px;
+    left: 0px;
+}
+
+#output {
+    position: absolute;
+    top: 5px;
+    left: 1200px;
+    width: 400px;
+    height: 700px;
+
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: white;
+
+}

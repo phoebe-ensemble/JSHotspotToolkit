@@ -9,11 +9,20 @@
 		<style>
 			body {
 			}
+			
+			canvas {					
+				position: relative;
+				padding-top: 0px;
+				margin-top: 0px;
+				background-image: url('../shh/diagram.png'); 
+				background-repeat: no-repeat; 
+				background-position: 7px 6px; /* mistakes were made, this is a one off adjustment that normally wouldn't need to be made, but hey, fine tuning is a nice thing to have */
+			}
 		</style>
 </head>
 <body class='no-js'>
 	<!--<p id='message-no-js'>This page needs Javascript to work.</p>-->
-	<canvas id="canvas" width=1000 height=800 style="position: absolute; left: 0px; top: 0px; border: 2px dashed grey; background-image: url('../images/background_image.jpg');"></canvas>
+	<canvas id="canvas" width=1000 height=800></canvas>
 	
 	<script src='../lib/dollardom.min.js'></script>	
 	<script src='../lib/Mouse.js'></script>
@@ -121,7 +130,7 @@
 				}		
 			}
 			
-			//render();
+			render();
 			//window.setInterval(render, 0.1);
 		}
 	</script>
