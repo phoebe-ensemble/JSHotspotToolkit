@@ -98,7 +98,72 @@ Tool.prototype.restoreData = function () {
     }
 }
 
+var MergeVertices = function () {
+}
 
+MergeVertices.prototype = Object.create(Tool.prototype);
+MergeVertices.prototype.constructor = MergeVertices;
+MergeVertices.prototype.click = function (x, y) { 
+    for(var i = 0; i < polygons.length; i++) {
+        for(var j = 0; j < polygons[i].length; j++) {
+            if(this.checkTolerance(polygons[i][j], {x, y})) {
+                //this.affectedPoints.push({i, j});
+                polygons[i][j] = {x, y};
+            }
+        }
+    }
+    this.redrawScreen();
+}
+MergeVertices.prototype.drawBrush = function (x, y) {
+
+    this.restoreData();
+
+    previousData.x = x - tolerance;
+    previousData.y = y - tolerance;
+    previousData.imageData = ctx.getImageData(previousData.x, previousData.y, tolerance * 2, tolerance * 2);
+
+    ctx.fillStyle = 'rgba(0,255,0,0.5)';
+    ctx.beginPath();
+    ctx.arc(x, y, tolerance, 0, 2 * Math.PI);
+    ctx.fill();
+
+}
+
+MergeVertices.prototype.redrawScreen = function () {
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+    for(var i = 0; i < polygons.length; i++) {
+        var polygon = polygons[i];
+
+        ctx.strokeStyle = 'rgb(150, 0, 0)';
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.moveTo(polygon[0].x, polygon[0].y);
+        for(var j = 1; j < polygon.length - 1; j++) {
+            ctx.lineTo(polygon[j].x, polygon[j].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2;
+        ctx.fillStyle = 'rgba(50,50,50,0.5)';
+        for(var j = 1; j < polygon.length; j++) {
+            ctx.beginPath();
+            ctx.arc(polygon[j].x, polygon[j].y, 7, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+
+
+        //ctx.fill();
+    }
+
+    ctx.strokeStyle = 'rgb(0, 150, 150)';
+    document.getElementById("outputText").value = JSON.stringify(polygons);
+}
 var MoveVertices = function () {
 }
 
@@ -219,6 +284,7 @@ var ctx = null;
 
 var tolerance = 20;
 
+var mergeVerticesBrush = new MergeVertices();
 var moveVerticesBrush = new MoveVertices();
 var drawPolyBrush = new Tool();
 
@@ -294,6 +360,11 @@ function initialise() {
 
     document.getElementById('drawPolyTool').addEventListener('click', function () {
         currentTool = drawPolyBrush; 
+        currentTool.redrawScreen();
+    });
+
+    document.getElementById('mergeVerticesTool').addEventListener('click', function () {
+        currentTool = mergeVerticesBrush; 
         currentTool.redrawScreen();
     });
 
