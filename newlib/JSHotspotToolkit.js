@@ -3,6 +3,29 @@ var Tool = function () {
 
 Tool.prototype.constructor = Tool;
 
+Tool.prototype.setStrokeStyle = function () {
+    ctx.lineWidth = 1;
+    //ctx.strokeStyle = 'rgb(0, 150, 150)';
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.75)';
+}
+
+Tool.prototype.drawVertex = function (point) {
+
+    var vertexWidth = 1;
+    var vertexSize = 10;
+
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = vertexWidth;
+    ctx.beginPath();
+    ctx.moveTo(point.x - (vertexSize / 2), point.y);
+    ctx.lineTo(point.x + (vertexSize / 2), point.y);
+
+    ctx.moveTo(point.x , point.y - (vertexSize / 2));
+    ctx.lineTo(point.x , point.y + (vertexSize / 2));
+
+    ctx.stroke();
+}
+
 Tool.prototype.redrawScreen = function () {
     ctx.clearRect(0,0,canvas.width, canvas.height);
     for(var i = 0; i < polygons.length; i++) {
@@ -18,59 +41,76 @@ Tool.prototype.redrawScreen = function () {
             ctx.lineTo(polygon[j].x, polygon[j].y);
         }
         ctx.closePath();
-        //ctx.stroke();
         ctx.fill();
     }
 
-    document.getElementById("outputText").value = JSON.stringify(polygons);
+    document.getElementById("outputText").innerHTML = JSON.stringify(polygons);
 }
 
 Tool.prototype.click = function (x, y) {
+
     var point = {x, y};
-    poly.push(point);
 
-    if(poly.length > 1) {
+    var done = false;
+    if(poly.length > 0) {
         var first = poly[0];
-        var start = poly[poly.length-2];
-        var end = poly[poly.length-1];
-
-        if(currentTool.checkTolerance(first, end)) {
-            poly.pop();
+        if(currentTool.checkTolerance(point, first)) {
+            // first test if we can close the polygon
             poly.push(first);
-
-            if(poly.length > 3)
-                polygons.push(poly);
-
+            if(poly.length > 3) polygons.push(poly);
             poly = [];
+            done = true;
             this.redrawScreen();
-        } else {
+        }
+    }
+
+     if(!done){
+        var found = false;
+        for(var i = 0; i < polygons.length; i++) {
+            var checkPoly = polygons[i];
+
+            for(var j = 0; j < checkPoly.length; j++) {
+                var currVertex = checkPoly[j];
+
+                if(currentTool.checkTolerance(point, currVertex)) {
+                    console.log("Found a vertex to snap to!");
+                    poly.push(currVertex);
+                    found = true;
+                    break;
+                }
+            }
+            if(found) break;
+        }
+
+        if(!found) {
+            poly.push(point);
+        }
+
+        if(poly.length > 1) {
+            var last = poly[poly.length - 2];
+            var curr = poly[poly.length - 1];
             ctx.beginPath();
-            ctx.moveTo(start.x, start.y);
-            ctx.lineTo(end.x, end.y);
+            ctx.moveTo(last.x, last.y);
+            ctx.lineTo(curr.x, curr.y);
             ctx.stroke();
         }
     }
 
+     // draw most recent vertex
     if(poly.length > 0) {
         var end = poly[poly.length-1];
-        ctx.beginPath();
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 2;
-        ctx.fillStyle = 'rgba(50,50,50,0.5)';
-        ctx.arc(end.x, end.y, 5, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = 'rgb(0, 150, 150)';
+        this.drawVertex(end);
+        this.setStrokeStyle();
     }
 }
 
 Tool.prototype.checkTolerance = function(first, last) {
-    var xDist =  first.x > last.x ? first.x - last.x : last.x - first.x;
-    var yDist =  first.y > last.y ? first.y - last.y : last.y - first.y;
+    var x_dist =  first.x > last.x ? first.x - last.x : last.x - first.x;
+    var y_dist =  first.y > last.y ? first.y - last.y : last.y - first.y;
 
-    if(xDist < tolerance && yDist < tolerance) return true;
+    var dist = (Math.sqrt((x_dist * x_dist) + (y_dist * y_dist)));
+
+    if(dist < tolerance) return true;
     return false;
 }
 
@@ -79,6 +119,10 @@ Tool.prototype.drawBrush = function (x, y) {
 
     previousData.x = x - tolerance;
     previousData.y = y - tolerance;
+
+    if(previousData.x < 0) previousData.x = 0;
+    if(previousData.y < 0) previousData.y = 0;
+
     previousData.imageData = ctx.getImageData(previousData.x, previousData.y, tolerance * 2, tolerance * 2);
 
     ctx.fillStyle = 'rgba(255,0,0,0.5)';
@@ -107,7 +151,6 @@ MergeVertices.prototype.click = function (x, y) {
     for(var i = 0; i < polygons.length; i++) {
         for(var j = 0; j < polygons[i].length; j++) {
             if(this.checkTolerance(polygons[i][j], {x, y})) {
-                //this.affectedPoints.push({i, j});
                 polygons[i][j] = {x, y};
             }
         }
@@ -115,18 +158,18 @@ MergeVertices.prototype.click = function (x, y) {
     this.redrawScreen();
 }
 MergeVertices.prototype.drawBrush = function (x, y) {
-
     this.restoreData();
 
     previousData.x = x - tolerance;
     previousData.y = y - tolerance;
+    if(previousData.x < 0) previousData.x = 0;
+    if(previousData.y < 0) previousData.y = 0;
     previousData.imageData = ctx.getImageData(previousData.x, previousData.y, tolerance * 2, tolerance * 2);
 
     ctx.fillStyle = 'rgba(0,255,0,0.5)';
     ctx.beginPath();
     ctx.arc(x, y, tolerance, 0, 2 * Math.PI);
     ctx.fill();
-
 }
 
 MergeVertices.prototype.redrawScreen = function () {
@@ -145,24 +188,15 @@ MergeVertices.prototype.redrawScreen = function () {
         ctx.closePath();
         ctx.stroke();
 
-
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2;
-        ctx.fillStyle = 'rgba(50,50,50,0.5)';
         for(var j = 1; j < polygon.length; j++) {
-            ctx.beginPath();
             ctx.arc(polygon[j].x, polygon[j].y, 7, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
+            this.drawVertex(polygon[j]);
         }
-
-
-
-        //ctx.fill();
+        this.setStrokeStyle();
     }
 
     ctx.strokeStyle = 'rgb(0, 150, 150)';
-    document.getElementById("outputText").value = JSON.stringify(polygons);
+    document.getElementById("outputText").innerHTML = JSON.stringify(polygons);
 }
 var MoveVertices = function () {
 }
@@ -174,17 +208,28 @@ MoveVertices.prototype.drawBrush = function (x, y) {
     if(this.mouseIsDown) {
         var diffX = x - this.downAt.x;
         var diffY = y - this.downAt.y;
-        
+        this.downAt.x = x;
+        this.downAt.y = y;
 
         for(var i = 0; i < this.affectedPoints.length; i++) {
             var p = this.affectedPoints[i];
 
-            polygons[p.i][p.j].x += diffX;
-            polygons[p.i][p.j].y += diffY;
-        }
+            var dupe = false;
+            for(j = 0; j < i; j++) {
+                var o = this.affectedPoints[j];
 
-        this.downAt.x = x;
-        this.downAt.y = y;
+                if(polygons[p.i][p.j] == polygons[o.i][o.j]) {
+                    dupe = true; // ignore points that have already been moved earlier in the outer loop
+                    break;
+                }
+            }
+
+            if(!dupe) {
+                polygons[p.i][p.j].x += diffX;
+                polygons[p.i][p.j].y += diffY;
+            }
+
+        }
 
         this.redrawScreen();
     } else {
@@ -193,6 +238,8 @@ MoveVertices.prototype.drawBrush = function (x, y) {
 
     previousData.x = x - tolerance;
     previousData.y = y - tolerance;
+    if(previousData.x < 0) previousData.x = 0;
+    if(previousData.y < 0) previousData.y = 0;
     previousData.imageData = ctx.getImageData(previousData.x, previousData.y, tolerance * 2, tolerance * 2);
 
     ctx.fillStyle = 'rgba(0,0,255,0.5)';
@@ -202,7 +249,6 @@ MoveVertices.prototype.drawBrush = function (x, y) {
 
 }
 MoveVertices.prototype.mouseDown = function (x, y) {
-
     this.mouseIsDown = true;
     this.affectedPoints = [];
     this.downAt = {x, y};
@@ -214,9 +260,6 @@ MoveVertices.prototype.mouseDown = function (x, y) {
             }
         }
     }
-
-    console.log(JSON.stringify(this.affectedPoints));
-
 }
 
 MoveVertices.prototype.mouseUp = function (x, y) {
@@ -233,9 +276,8 @@ MoveVertices.prototype.mouseUp = function (x, y) {
             polygons[p.i][p.j].y += diffY;
         }
 
-
-        this.redrawScreen();
-
+      document.getElementById("outputText").innerHTML = JSON.stringify(polygons);
+      this.redrawScreen();
     }
 }
 
@@ -255,22 +297,11 @@ MoveVertices.prototype.redrawScreen = function () {
         ctx.closePath();
         ctx.stroke();
 
-
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2;
-        ctx.fillStyle = 'rgba(50,50,50,0.5)';
         for(var j = 1; j < polygon.length; j++) {
-            ctx.beginPath();
-            ctx.arc(polygon[j].x, polygon[j].y, 7, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
+            this.drawVertex(polygon[j]);
         }
 
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = 'rgb(0, 150, 150)';
-
-
-        //ctx.fill();
+        this.setStrokeStyle();;
     }
 
     document.getElementById("outputText").value = JSON.stringify(polygons);
@@ -291,42 +322,106 @@ var drawPolyBrush = new Tool();
 var currentTool = drawPolyBrush;
 
 var imageData = null;
+var imageName = "";
 
 function handleFileSelect (event) {
     var file = event.target.files[0];
     var reader = new FileReader();
 
+    if(file.name !== undefined)
+        imageName = file.name;
+    else
+        imageName = "";
+
     reader.onload = (function(imageFile) {
         return function(e) {
-            document.getElementById('workspace')
+            document.getElementById('canvas')
                 .setAttribute('style', 'background-image: url("' + e.target.result + '")');
             imageData = new Image();
             imageData.src = e.target.result;
+
+            canvas.width = imageData.naturalWidth;
+            canvas.height = imageData.naturalHeight;
         };
     })(file);
 
     reader.readAsDataURL(file);
 }
 
+function handleLoadJSON (event) {
+    var file = event.target.files[0];
+    var reader = new FileReader();
+
+    reader.onload = (function(imageFile) {
+        return function(e) {
+           document.getElementById('outputText').innerHTML = e.target.result;
+            polygons = JSON.parse(document.getElementById("outputText").innerHTML);
+            currentTool.redrawScreen();
+        };
+    })(file);
+
+    reader.readAsText(file);
+}
+
 function handleLeftClick(event) {
     var workspace = document.getElementById("workspace");
-    var x = event.clientX - workspace.offsetLeft + window.scrollX;
-    var y = event.clientY - workspace.offsetTop + window.scrollY;
+    var x = event.clientX - canvas.offsetLeft - workspace.offsetLeft + window.scrollX + workspace.scrollLeft;
+    var y = event.clientY - canvas.offsetTop - workspace.offsetTop + window.scrollY + workspace.scrollTop;
     currentTool.restoreData();
     previousData.imageData = null;
     currentTool.click(x, y);
 }
 
-
 var previousData = {};
-
 
 function handleMouseMove(event) {
     var workspace = document.getElementById("workspace");
-    var x = event.clientX - workspace.offsetLeft + window.scrollX;
-    var y = event.clientY - workspace.offsetTop + window.scrollY;
+    var x = event.clientX - canvas.offsetLeft - workspace.offsetLeft + window.scrollX + workspace.scrollLeft;
+    var y = event.clientY - canvas.offsetTop - workspace.offsetTop + window.scrollY + workspace.scrollTop;
+
+    console.log("Client y: " + event.clientY);
+    console.log("Workspace scroll y: " + workspace.scrollTop);
+
+    if(isResizing) {
+        var x_dist = resizeStart.x > x ? resizeStart.x - x : x - resizeStart.x;
+        var y_dist = resizeStart.y > y ? resizeStart.y - y : y - resizeStart.y;
+
+        var newBrushSize = (Math.sqrt((x_dist * x_dist) + (y_dist * y_dist)));
+        if(newBrushSize < 5) newBrushSize = 5;
+        document.getElementById("brushSize").value =  newBrushSize;
+        tolerance = newBrushSize;
+    }
+
     currentTool.drawBrush(x, y);
 }
+
+function handleMouseOut(event) {
+    currentTool.restoreData();
+}
+
+var isResizing = false;
+var resizeStart = {};
+function startBrushResize(x, y) {
+    isResizing = true;
+    resizeStart.x = x;
+    resizeStart.y = y;
+}
+
+function endBrushResize(x, y) {
+    isResizing = false;
+}
+
+function resizeCanvas() {
+    var canvas = document.getElementById("canvas");
+    var workspace = document.getElementById("workspace");
+
+//    canvas.style.width = "100%";
+//    canvas.style.height = "100%";
+//    canvas.width = canvas.offsetWidth;
+//    canvas.height = canvas.offsetHeight;
+//  currentTool.redrawScreen();
+}
+
 
 function initialise() {
     document.getElementById('imageFile')
@@ -339,32 +434,41 @@ function initialise() {
     ctx.lineWidth = 5;
     ctx.strokeStyle = 'rgb(0, 150, 150)';
 
-    canvas.addEventListener('click', handleLeftClick, false);
+    canvas.addEventListener('mouseout', handleMouseOut, false);
     canvas.addEventListener('mousemove', handleMouseMove, false);
-    canvas.addEventListener('mouseup', function (event) { 
+    canvas.addEventListener('mouseup', function (event) {
         var workspace = document.getElementById("workspace");
-        var x = event.clientX - workspace.offsetLeft + window.scrollX;
-        var y = event.clientY - workspace.offsetTop + window.scrollY;
-        currentTool.mouseUp(x, y);
+
+    var x = event.clientX - canvas.offsetLeft - workspace.offsetLeft + window.scrollX + workspace.scrollLeft;
+    var y = event.clientY - canvas.offsetTop - workspace.offsetTop + window.scrollY + workspace.scrollTop;
+
+        if(isResizing) endBrushResize(x, y);
+        else {
+            currentTool.mouseUp(x, y);
+            handleLeftClick(event);
+        }
     }, false);
 
     canvas.addEventListener('mousedown', function (event) { 
+
         var workspace = document.getElementById("workspace");
-        var x = event.clientX - workspace.offsetLeft + window.scrollX;
-        var y = event.clientY - workspace.offsetTop + window.scrollY;
-        currentTool.mouseDown(x, y);
+    var x = event.clientX - canvas.offsetLeft - workspace.offsetLeft + window.scrollX + workspace.scrollLeft;
+    var y = event.clientY - canvas.offsetTop - workspace.offsetTop + window.scrollY + workspace.scrollTop;
+        if(!event.ctrlKey) currentTool.mouseDown(x, y);
+        if(event.ctrlKey) startBrushResize(x, y);
     }, false);
+
     document.getElementById('brushSize').addEventListener('change', function () {
         tolerance = this.value;
     });
 
     document.getElementById('drawPolyTool').addEventListener('click', function () {
-        currentTool = drawPolyBrush; 
+        currentTool = drawPolyBrush;
         currentTool.redrawScreen();
     });
 
     document.getElementById('mergeVerticesTool').addEventListener('click', function () {
-        currentTool = mergeVerticesBrush; 
+        currentTool = mergeVerticesBrush;
         currentTool.redrawScreen();
     });
 
@@ -377,11 +481,30 @@ function initialise() {
         ctx.drawImage(imageData, 0, 0)
     });
 
+    document.getElementById('loadFile').addEventListener('click', function () {
+        document.getElementById('load').click();
+    })
+    document.getElementById('load')
+        .addEventListener('change', handleLoadJSON, false);
+
+    document.getElementById('saveFile').addEventListener('click', (function () {
+        var fileName = "shape_data.json";
+
+        if(imageName.length > 0) {
+            fileName = imageName.substring(0, imageName.lastIndexOf('.')) + ".json";
+        }
+
+        saveTextAs(document.getElementById('outputText').innerHTML, fileName);
+    }).bind(this));
 
     document.getElementById('refresh').addEventListener('click', function () {
-
-        polygons = JSON.parse(document.getElementById("outputText").value);
+        polygons = JSON.parse(document.getElementById("outputText").innerHTML);
         currentTool.redrawScreen();
     }, false);
+
+
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 }
 
