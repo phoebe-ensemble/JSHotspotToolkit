@@ -142,6 +142,105 @@ Tool.prototype.restoreData = function () {
     }
 }
 
+var parentPoly = -1;
+var polygroupColour;
+var groups = [];
+
+var SetParentTool = function () {
+}
+
+SetParentTool.prototype = Object.create(Tool.prototype);
+SetParentTool.prototype.constructor = SetParentTool;
+SetParentTool.prototype.click = function (x, y) {
+    for(var i = 0; i < polygons.length; i++) {
+        var polygon = polygons[i];
+
+        ctx.beginPath();
+        ctx.moveTo(polygon[0].x, polygon[0].y);
+        for(var j = 1; j < polygon.length; j++) {
+            ctx.lineTo(polygon[j].x, polygon[j].y);
+        }
+        ctx.closePath();
+
+        if(ctx.isPointInPath(x, y)) {
+            parentPoly = i;
+            groups[parentPoly] = [];
+            polygroupColour = "rgba(" + Math.ceil(25 + Math.random() * 200) + ","
+                               + Math.ceil(25 + Math.random() * 200) + ","
+                               + Math.ceil(25 + Math.random() * 200) + "," + 0.5 + ")";
+            ctx.fillstyle = polygroupColour;
+            ctx.fill();
+            return;
+        }
+    }
+}
+
+SetParentTool.prototype.redrawScreen = function () {
+    ctx.drawImage(imageData, 0, 0);
+}
+
+
+SetParentTool.prototype.drawBrush = function (x, y) {
+    this.restoreData();
+
+    previousData.x = x - tolerance;
+    previousData.y = y - tolerance;
+    if(previousData.x < 0) previousData.x = 0;
+    if(previousData.y < 0) previousData.y = 0;
+    previousData.imageData = ctx.getImageData(previousData.x, previousData.y, tolerance * 2, tolerance * 2);
+
+    ctx.fillStyle = 'rgba(148, 4, 157,0.5)';
+    ctx.beginPath();
+    ctx.arc(x, y, tolerance, 0, 2 * Math.PI);
+    ctx.fill();
+}
+
+var AddChildTool = function () {
+}
+
+AddChildTool.prototype = Object.create(Tool.prototype);
+AddChildTool.prototype.constructor = SetParentTool;
+AddChildTool.prototype.click = function (x, y) {
+    for(var i = 0; i < polygons.length; i++) {
+        var polygon = polygons[i];
+        ctx.beginPath();
+        ctx.moveTo(polygon[0].x, polygon[0].y);
+        for(var j = 1; j < polygon.length; j++) {
+            ctx.lineTo(polygon[j].x, polygon[j].y);
+        }
+        ctx.closePath();
+
+        if(ctx.isPointInPath(x, y)) {
+            ctx.fillstyle = polygroupColour;
+            ctx.fill();
+            groups[parentPoly].push(i);
+            console.log(JSON.stringify(groups));
+
+            return;
+        }
+    }
+}
+
+AddChildTool.prototype.redrawScreen = function () {
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+    ctx.drawImage(imageData, 0, 0);
+}
+
+AddChildTool.prototype.drawBrush = function (x, y) {
+    this.restoreData();
+
+    previousData.x = x - tolerance;
+    previousData.y = y - tolerance;
+    if(previousData.x < 0) previousData.x = 0;
+    if(previousData.y < 0) previousData.y = 0;
+    previousData.imageData = ctx.getImageData(previousData.x, previousData.y, tolerance * 2, tolerance * 2);
+
+    ctx.fillStyle = 'rgba(241, 112, 249,0.5)';
+    ctx.beginPath();
+    ctx.arc(x, y, tolerance, 0, 2 * Math.PI);
+    ctx.fill();
+}
+
 var MergeVertices = function () {
 }
 
@@ -318,6 +417,8 @@ var tolerance = 20;
 var mergeVerticesBrush = new MergeVertices();
 var moveVerticesBrush = new MoveVertices();
 var drawPolyBrush = new Tool();
+var setParentTool = new SetParentTool();
+var addChildTool = new AddChildTool();
 
 var currentTool = drawPolyBrush;
 
@@ -422,7 +523,6 @@ function resizeCanvas() {
 //  currentTool.redrawScreen();
 }
 
-
 function initialise() {
     document.getElementById('imageFile')
         .addEventListener('change', handleFileSelect, false);
@@ -450,13 +550,25 @@ function initialise() {
     }, false);
 
     canvas.addEventListener('mousedown', function (event) { 
-
         var workspace = document.getElementById("workspace");
-    var x = event.clientX - canvas.offsetLeft - workspace.offsetLeft + window.scrollX + workspace.scrollLeft;
-    var y = event.clientY - canvas.offsetTop - workspace.offsetTop + window.scrollY + workspace.scrollTop;
-        if(!event.ctrlKey) currentTool.mouseDown(x, y);
-        if(event.ctrlKey) startBrushResize(x, y);
+        var x = event.clientX - canvas.offsetLeft - workspace.offsetLeft + window.scrollX + workspace.scrollLeft;
+        var y = event.clientY - canvas.offsetTop - workspace.offsetTop + window.scrollY + workspace.scrollTop;
+            if(!event.ctrlKey) currentTool.mouseDown(x, y);
+            if(event.ctrlKey) startBrushResize(x, y);
     }, false);
+
+    document.getElementById('setParent').addEventListener('click', function () {
+        currentTool = setParentTool;
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        currentTool.redrawScreen();
+    });
+
+    document.getElementById('addChild').addEventListener('click', function () {
+        currentTool = addChildTool;
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        currentTool.redrawScreen();
+    });
+
 
     document.getElementById('brushSize').addEventListener('change', function () {
         tolerance = this.value;
